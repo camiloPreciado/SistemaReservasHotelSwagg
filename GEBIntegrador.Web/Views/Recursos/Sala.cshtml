@@ -1,0 +1,222 @@
+﻿@model GEBIntegrador.Dto.ReservaSalaDto
+@using System.Security.Claims;
+
+@{
+    ViewData["Title"] = "Sala";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    List<SelectListItem> listaNiveles = (List<SelectListItem>)ViewBag.niveles;
+    
+}
+
+
+
+@* <link rel="stylesheet" href="~/css/calendar.css" asp-append-version="true" /> *@
+<link rel="stylesheet" href="~/css/calendar.css" asp-append-version="true" />
+
+<h1>Reservar Sala de Reunión</h1>
+
+<hr />
+<div class="card p-0">
+    <div class="card-header">
+        <h4>Datos de la reserva</h4>
+    </div>
+
+    <div class="card-body">
+        <div class="row" style="margin-bottom: 2%">
+   
+            <div class="col-md-4">
+                <div class="form-group mb-2">
+                    <label class="control-label">Piso</label>
+                    <select class="form-select" id="pisoDropdownItems" onchange="window.seleccionarPiso()">
+                        <option value="">--Elija un piso-- </option>
+                        @foreach (SelectListItem nivel in listaNiveles)
+                        {
+                            <option value="@nivel.Value">@nivel.Text</option>
+                        }
+
+                
+                    </select>    
+                </div>
+
+                <div class="form-group mb-2">
+                    <label class="control-label">Salas</label>
+                    <select class="form-select" id="salaDropdownItems">
+                        <option value="">--Elija una sala-- </option>
+                    </select>
+                </div>
+
+                <div class="form-group mb-2">
+                    <label class="control-label">Capacidad de la Sala</label>
+                    <input class="form-control" type="text" id="capacidadSala" maxlength="36" readonly>
+                </div>
+
+            </div>
+            @* <div class="col-md-8">
+                <div class="col-12 d-flex justify-content-center">
+                    <div class="imagen-container">
+                        <img id="imagenNivel" class="imagen">
+                    </div>
+                </div>
+            </div> *@
+
+            <div class="col-md-8">
+                <div class="col-12 d-flex justify-content-center">
+                    <div class="iframe-container">
+                        <iframe style="max-width: 100%;" id="pdfViewer" class="thumbnail" src="" width="700" height="300" frameborder="0" scrolling="auto" allowfullscreen></iframe>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+</div>
+
+
+
+  
+
+<hr />
+
+
+<div class="card p-0">
+    <div class="card-header">
+        <h4>Seleccionar fecha de reserva</h4>
+    </div>
+
+    <div class="card-body">
+         <div class="row">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="content w-100">
+                            <div class="calendar-container">
+                                <div class="calendar">
+                                    <div class="year-header">
+                                        <span class="left-button fa fa-chevron-left" id="prev"> </span>
+                                        <span class="year" id="label"></span>
+                                        <span class="right-button fa fa-chevron-right" id="next"> </span>
+                                    </div>
+                                    <table class="months-table w-100">
+                                        <tbody>
+                                            <tr class="months-row">
+                                                <td class="month">Ene</td>
+                                                <td class="month">Feb</td>
+                                                <td class="month">Mar</td>
+                                                <td class="month">Abr</td>
+                                                <td class="month">May</td>
+                                                <td class="month">Jun</td>
+                                                <td class="month">Jul</td>
+                                                <td class="month">Ago</td>
+                                                <td class="month">Sep</td>
+                                                <td class="month">Oct</td>
+                                                <td class="month">Nov</td>
+                                                <td class="month">Dic</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+
+                                    <table class="days-table w-100">
+                                        <td class="day">Dom</td>
+                                        <td class="day">Lun</td>
+                                        <td class="day">Mar</td>
+                                        <td class="day">Mie</td>
+                                        <td class="day">Jue</td>
+                                        <td class="day">Vie</td>
+                                        <td class="day">Sab</td>
+                                    </table>
+                                    <div class="frame">
+                                        <table class="dates-table w-100">
+                                            <tbody class="tbody">
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <button class="button" id="add-button" style="background-color: #3058A6" data-bs-toggle="modal" data-bs-target="#exampleModal">Reservar</button>                           
+                                    </div>
+                            </div>
+
+                            <div class="events-container" style="background-color: white"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+  
+                        
+   
+
+
+
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Datos de la reserva</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <form class="form" id="form">                   
+
+                    @{
+                        string nombre = "";
+                        if (Context.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name) != null)
+                        {
+                            nombre = Context.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name).Value;
+                        }
+                    }
+
+                    
+                    
+                    <div class="row" style="margin-bottom:2%">
+                        <div class="col">
+                            <label class="control-label" id="valueFromMyButton" for="name">Nombre de la persona</label>
+                        </div>
+                        <div class="col">
+                            <input class="form-control" type="text" id="name" maxlength="36" value="@nombre" readonly>
+                        </div>
+                    </div>
+
+
+
+                    <div class="row" style="margin-bottom:2%">
+                        <div class="col">
+                            <label id="timepicker-input-label" class="form-label" for="timepicker-input">Hora inicio:</label>
+                            <input type="text" id="timepicker-input" class="input" name="time" value="" size="10" autocomplete="off" />
+                        </div>
+
+                        <div class="col">
+                            <label id="timepicker-input-label-fin" class="form-label" for="timepicker-input-fin">Hora fin:</label>
+                            <input type="text" id="timepicker-input-fin" class="input" name="time-fin" value="" size="10" autocomplete="off" />
+                        </div>
+                    </div>
+
+
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="cancel-button">Cancelar</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="okk-button" >Reservar</button> 
+                @* se pone okk-button en el id para guardar en la B D*@
+            </div>
+        </div>
+    </div>
+</div>
+        
+
+
+
+<script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
+<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script> 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" ></script> 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dayjs/1.11.4/dayjs.min.js" ></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script> 
+<script src="~/lib/jquery-timepiker/timepicker-bs4.js" defer="defer"></script>
+<script src="~/js/reserva/sala.js" type="module"></script>
